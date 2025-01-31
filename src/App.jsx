@@ -120,6 +120,7 @@ export default function App() {
           rowIdx={rowIdx}
           board={board}
           isWinner={isWinner}
+          isPlayerX={isPlayerX}
         />
       );
     });
