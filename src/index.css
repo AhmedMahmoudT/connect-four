@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Atma";
+  src: local("Atma-Medium"), url("./assets/fonts/Atma/Atma-Medium.ttf");
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: local("Montserrat-Medium"), url("./assets/fonts/Atma/Atma-Medium.ttf");
+}
