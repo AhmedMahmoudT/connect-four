@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-export default function Square({ handleDrop, colIdx, rowIdx, board, isWinner, isPlayerX }) {
+export default function Square({ handleDrop, colIdx, rowIdx, board, isWinner, isHumanTurn }) {
   const isFilled = board[rowIdx][colIdx] !== "";
   
   return (
     <div 
       className="flex items-center justify-center cursor-pointer" 
-      onClick={() => !isFilled && !isWinner && !isPlayerX && handleDrop(colIdx)}
+      onClick={() => isHumanTurn && !isFilled && !isWinner && handleDrop(colIdx)}
     >
       {board[rowIdx][colIdx] === "X" ? (
         <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-full w-[80px] h-[80px]"></div>

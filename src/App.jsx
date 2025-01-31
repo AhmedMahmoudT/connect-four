@@ -112,6 +112,9 @@ export default function App() {
 
   const fullBoard = board.map((row, rowIdx) => {
     return row.map((_, colIdx) => {
+      const humanSymbol = isPlayerX ? 'X' : 'O';
+      const isHumanTurn = currentPlayer === humanSymbol;
+      
       return (
         <Square
           key={colIdx + "" + rowIdx}
@@ -120,7 +123,7 @@ export default function App() {
           rowIdx={rowIdx}
           board={board}
           isWinner={isWinner}
-          isPlayerX={isPlayerX}
+          isHumanTurn={isHumanTurn}
         />
       );
     });
