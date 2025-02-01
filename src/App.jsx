@@ -69,12 +69,13 @@ export default function App() {
   const [board, setBoard] = useState(Array(6).fill().map(() => Array(7).fill("")));
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [isWinner, setIsWinner] = useState(false);
-  const [isPlayerX, setIsPlayerX] = useState(true);
+  const [nextStarter, setNextStarter] = useState("O"); // Start with AI first to alternate immediately
 
   const handleNewGame = () => {
-    const newIsPlayerX = !isPlayerX;
-    setIsPlayerX(newIsPlayerX);
-    setCurrentPlayer(newIsPlayerX ? "X" : "O");
+    // Alternate starting player
+    const newStarter = nextStarter === "X" ? "O" : "X";
+    setCurrentPlayer(newStarter);
+    setNextStarter(newStarter);
     setBoard(Array(6).fill().map(() => Array(7).fill("")));
     setIsWinner(false);
   };
@@ -98,35 +99,27 @@ export default function App() {
   }, [board, currentPlayer, isWinner]);
 
   useEffect(() => {
-    const aiSymbol = isPlayerX ? "O" : "X";
-    const playerSymbol = isPlayerX ? "X" : "O";
-    
-    if (currentPlayer === aiSymbol && !isWinner) {
+    if (currentPlayer === "O" && !isWinner) {
       const timeout = setTimeout(() => {
-        const bestCol = getBestMove(board, aiSymbol, playerSymbol);
+        const bestCol = getBestMove(board);
         handleDrop(bestCol);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [currentPlayer, board, isWinner, handleDrop, isPlayerX]);
+  }, [currentPlayer, board, isWinner, handleDrop]);
 
   const fullBoard = board.map((row, rowIdx) => {
-    return row.map((_, colIdx) => {
-      const humanSymbol = isPlayerX ? 'X' : 'O';
-      const isHumanTurn = currentPlayer === humanSymbol;
-      
-      return (
-        <Square
-          key={colIdx + "" + rowIdx}
-          handleDrop={handleDrop}
-          colIdx={colIdx}
-          rowIdx={rowIdx}
-          board={board}
-          isWinner={isWinner}
-          isHumanTurn={isHumanTurn}
-        />
-      );
-    });
+    return row.map((_, colIdx) => (
+      <Square
+        key={colIdx + "" + rowIdx}
+        handleDrop={handleDrop}
+        colIdx={colIdx}
+        rowIdx={rowIdx}
+        board={board}
+        isWinner={isWinner}
+        isHumanTurn={currentPlayer === "X"}
+      />
+    ));
   });
 
   return (
@@ -144,19 +137,21 @@ export default function App() {
           {fullBoard}
         </div>
         <div className="mt-10 w-[700px] flex items-center justify-between">
-        {isWinner ? (
-          <div className="flex items-center justify-center gap-10">
-            <h1>The Winner is</h1>
-            {currentPlayer === "X" ? (
-              <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-full w-[80px] h-[80px]"></div>
-            ) : (
-              <div className="bg-gradient-to-br from-amber-300 to-amber-500 rounded-full w-[80px] h-[80px]"></div>
-            )}
-          </div>
-        ) : (
-          <div className="h-[80px]"></div>
-        )}
-        <button onClick={handleNewGame} className="border-2 rounded-lg p-3 bg-gradient-to-br from-blue-500 to-blue-700 text-white hover:from-white hover:to-white hover:text-blue-500 transition-all cursor-pointer">New Game</button>
+          {isWinner ? (
+            <div className="flex items-center justify-center gap-10">
+              <h1>The Winner is</h1>
+              {currentPlayer === "X" ? (
+                <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-full w-[80px] h-[80px]"></div>
+              ) : (
+                <div className="bg-gradient-to-br from-amber-300 to-amber-500 rounded-full w-[80px] h-[80px]"></div>
+              )}
+            </div>
+          ) : (
+            <div className="h-[80px]"></div>
+          )}
+          <button onClick={handleNewGame} className="border-2 rounded-lg p-3 bg-gradient-to-br from-blue-500 to-blue-700 text-white hover:from-white hover:to-white hover:text-blue-500 transition-all cursor-pointer">
+            New Game
+          </button>
         </div>
       </div>
     </main>
