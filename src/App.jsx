@@ -41,28 +41,115 @@ const getRowForColumn = (board, col) => {
   return -1;
 };
 
+// Ajouter ces nouvelles fonctions avant getBestMove:
+
+const evaluateWindow = (window, player) => {
+  const opponent = player === 'O' ? 'X' : 'O';
+  let score = 0;
+  
+  if (window.filter(cell => cell === player).length === 4) score += 100;
+  else if (window.filter(cell => cell === player).length === 3 && window.filter(cell => cell === "").length === 1) score += 5;
+  else if (window.filter(cell => cell === player).length === 2 && window.filter(cell => cell === "").length === 2) score += 2;
+  
+  if (window.filter(cell => cell === opponent).length === 3 && window.filter(cell => cell === "").length === 1) score -= 4;
+  
+  return score;
+};
+
+const evaluateBoard = (board, player) => {
+  let score = 0;
+  
+  // Horizontal
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 4; col++) {
+      const window = board[row].slice(col, col + 4);
+      score += evaluateWindow(window, player);
+    }
+  }
+  
+  // Vertical
+  for (let col = 0; col < 7; col++) {
+    for (let row = 0; row < 3; row++) {
+      const window = [board[row][col], board[row+1][col], board[row+2][col], board[row+3][col]];
+      score += evaluateWindow(window, player);
+    }
+  }
+  
+  // Diagonales
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 4; col++) {
+      const window1 = [board[row][col], board[row+1][col+1], board[row+2][col+2], board[row+3][col+3]];
+      const window2 = [board[row+3][col], board[row+2][col+1], board[row+1][col+2], board[row][col+3]];
+      score += evaluateWindow(window1, player);
+      score += evaluateWindow(window2, player);
+    }
+  }
+  
+  return score;
+};
+
+const minimax = (board, depth, alpha, beta, maximizingPlayer) => {
+  if (depth === 0) return evaluateBoard(board, 'O');
+  
+  if (maximizingPlayer) {
+    let maxEval = -Infinity;
+    for (let col = 0; col < 7; col++) {
+      const row = getRowForColumn(board, col);
+      if (row === -1) continue;
+      
+      const newBoard = board.map(r => [...r]);
+      newBoard[row][col] = 'O';
+      
+      if (checkWin(newBoard, row, col, 'O')) return 10000;
+      
+      const evl= minimax(newBoard, depth - 1, alpha, beta, false);
+      maxEval = Math.max(maxEval, evl);
+      alpha = Math.max(alpha, evl);
+      if (beta <= alpha) break;
+    }
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    for (let col = 0; col < 7; col++) {
+      const row = getRowForColumn(board, col);
+      if (row === -1) continue;
+      
+      const newBoard = board.map(r => [...r]);
+      newBoard[row][col] = 'X';
+      
+      if (checkWin(newBoard, row, col, 'X')) return -10000;
+      
+      const evl = minimax(newBoard, depth - 1, alpha, beta, true);
+      minEval = Math.min(minEval, evl);
+      beta = Math.min(beta, evl);
+      if (beta <= alpha) break;
+    }
+    return minEval;
+  }
+};
+
+// Remplacer getBestMove par:
 const getBestMove = (board) => {
+  let bestScore = -Infinity;
+  let bestMove = 3;
+  
   for (let col = 0; col < 7; col++) {
     const row = getRowForColumn(board, col);
     if (row === -1) continue;
-    const newBoard = board.map((r) => [...r]);
-    newBoard[row][col] = "O";
-    if (checkWin(newBoard, row, col, "O")) return col;
+    
+    const newBoard = board.map(r => [...r]);
+    newBoard[row][col] = 'O';
+    
+    if (checkWin(newBoard, row, col, 'O')) return col;
+    
+    const score = minimax(newBoard, 4, -Infinity, Infinity, false);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = col;
+    }
   }
-
-  for (let col = 0; col < 7; col++) {
-    const row = getRowForColumn(board, col);
-    if (row === -1) continue;
-    const newBoard = board.map((r) => [...r]);
-    newBoard[row][col] = "X";
-    if (checkWin(newBoard, row, col, "X")) return col;
-  }
-
-  const preferredCols = [3, 2, 4, 1, 5, 0, 6];
-  for (const col of preferredCols) {
-    if (getRowForColumn(board, col) !== -1) return col;
-  }
-  return 0;
+  
+  return bestMove;
 };
 
 export default function App() {
